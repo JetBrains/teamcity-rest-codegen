@@ -1,0 +1,13 @@
+package {{packageName}}.base
+
+import {{packageName}}.infrastructure.ClientConfig
+import {{packageName}}.infrastructure.DataEntityPaginatedIterator
+
+abstract class PaginatedEntity<T: DataEntity> : ListEntity<T>() {
+    @Transient open val nextHref: String? = null
+    @Transient open val prevHref: String? = null
+
+    fun getPaginatedIterator(clientConfig: ClientConfig): DataEntityPaginatedIterator<T> {
+        return DataEntityPaginatedIterator(this.nextHref, clientConfig, items())
+    }
+}

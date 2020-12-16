@@ -1,0 +1,43 @@
+package {{packageName}}.infrastructure
+
+import java.util.*
+
+data class ClientConfig(
+        val authHeader: String? = null,
+        val urlAuthPart: String? = "",
+        val serverUrl: String
+) {
+    val baseUrl = serverUrl.trimEnd('/') + urlAuthPart
+
+    companion object {
+        @JvmStatic
+        fun getBasicAuthConfig(
+                username: String,
+                password: String,
+                serverUrl: String
+        ): ClientConfig {
+            val authHeader = Base64.getEncoder().encodeToString("$username:$password".toByteArray())
+            return ClientConfig(
+                    authHeader = authHeader,
+                    urlAuthPart = "/httpAuth",
+                    serverUrl = serverUrl
+            )
+        }
+
+        @JvmStatic
+        fun getGuestAuthConfig(serverUrl: String): ClientConfig {
+            return ClientConfig(
+                    urlAuthPart = "/guestAuth",
+                    serverUrl = serverUrl
+            )
+        }
+
+        @JvmStatic
+        fun getTokenAuthConfig(serverUrl: String, token: String): ClientConfig {
+            return ClientConfig(
+                    authHeader = "Bearer $token",
+                    serverUrl = serverUrl
+            )
+        }
+    }
+}

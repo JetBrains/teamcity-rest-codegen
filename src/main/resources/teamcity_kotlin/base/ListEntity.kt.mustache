@@ -1,0 +1,14 @@
+package {{packageName}}.base
+
+import {{packageName}}.infrastructure.DataEntityIterator
+
+abstract class ListEntity<T : DataEntity> {
+    @Transient open val href: String? = null
+    @Transient open val count: Int? = null
+
+    abstract fun items(): List<T>
+
+    fun getIterator(): DataEntityIterator<T> {
+        return DataEntityIterator(items())
+    }
+}

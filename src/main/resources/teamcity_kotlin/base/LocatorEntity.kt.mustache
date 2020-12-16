@@ -1,0 +1,36 @@
+package {{packageName}}.base
+
+import kotlin.jvm.Throws
+import kotlin.reflect.KVisibility
+import kotlin.reflect.full.memberProperties
+
+open class LocatorEntity {
+
+    override fun toString(): String {
+        val result = ArrayList<String>()
+
+        this::class.memberProperties.forEach {
+            if (it.visibility == KVisibility.PUBLIC) {
+                val name = it.name
+                if (name != "classModelName") {
+                    val value = this.getField(name)
+                    if (!value.isNullOrEmpty())
+                        result.add("$name:($value)")
+                }
+            }
+        }
+
+        return result.joinToString(",")
+    }
+}
+
+@Throws(IllegalAccessException::class)
+fun Any.getField(fieldName: String): String? {
+    this::class.memberProperties.forEach { kCallable ->
+        if (fieldName == kCallable.name) {
+            val fieldValue = kCallable.getter.call(this) ?: return null
+            return fieldValue.toString()
+        }
+    }
+    return null
+}

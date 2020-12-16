@@ -1,0 +1,11 @@
+{{#models}}
+{{#model}}
+[//]: # (title: {{classname}})
+[//]: # (auxiliary-id: {{classname}} model)
+
+{{#vendorExtensions.x-description}}{{{vendorExtensions.x-description}}}{{/vendorExtensions.x-description}}{{^vendorExtensions.x-description}}The description will be available soon.{{/vendorExtensions.x-description}}
+
+{{#vendorExtensions.x-is-locator}}{{>locator.param.table}}{{/vendorExtensions.x-is-locator}}{{^vendorExtensions.x-is-locator}}{{>model.param.table}}{{/vendorExtensions.x-is-locator}}
+
+{{/model}}
+{{/models}}

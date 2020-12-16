@@ -1,0 +1,69 @@
+package {{apiPackage}}
+
+import com.google.gson.GsonBuilder
+import {{packageName}}.infrastructure.*
+import {{modelPackage}}.*
+
+{{#operations}}
+class {{classname}}(clientConfig : ClientConfig) : ApiClient(clientConfig) {
+
+    {{#operation}}
+    /**
+    {{#summary}}* {{{summary}}}{{/summary}}
+    * Runs {{httpMethod}} request on "{{path}}" endpoint.
+    {{#allParams}}* @param {{paramName}} {{description}} {{^required}}(optional{{#defaultValue}}, default to {{{.}}}{{/defaultValue}}){{/required}}
+    {{/allParams}}* @return {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Unit{{/returnType}}
+    */
+    fun {{operationId}}(
+        {{#sortParamsByRequiredFlag}}
+            {{#allParams}}
+                {{#required}}
+                    {{paramName}}: {{dataType}},
+                {{/required}}
+                {{^required}}
+                    {{paramName}}: {{dataType}}? = null,
+                {{/required}}
+            {{/allParams}}
+        {{/sortParamsByRequiredFlag}}
+                    extraHeaders: Map<String, String> = jsonHeaders
+    ) : {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Unit{{/returnType}} {
+
+        {{#bodyParams}}
+        var localBody = ""
+            {{^isPrimitiveType}}
+        if (body != null) {
+            val gson = GsonBuilder().create()
+            localBody = gson.toJson(body)
+        }
+            {{/isPrimitiveType}}
+            {{#isPrimitiveType}}
+        if (body != null) {
+            localBody = body.toString()
+        }
+            {{/isPrimitiveType}}
+        {{/bodyParams}}
+
+        val localQuery: MutableMap<String,List<String>> = HashMap()
+        {{#hasQueryParams}}
+            {{#queryParams}}
+        {{baseName}}?.let { localQuery["{{baseName}}"] = listOf("${{paramName}}") }
+            {{/queryParams}}
+        {{/hasQueryParams}}
+
+        val localVariableConfig = RequestConfig(
+            RequestMethod.{{httpMethod}},
+            "{{path}}"{{#pathParams}}.replace("{"+"{{baseName}}"+"}", "${{paramName}}"){{/pathParams}},
+            query = localQuery,
+            headers = extraHeaders
+        )
+
+        val response = request<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Unit{{/returnType}}>(
+            localVariableConfig{{#bodyParams}},
+            localBody{{/bodyParams}}
+        )
+        return processResponse(response)
+    }
+
+    {{/operation}}
+}
+{{/operations}}

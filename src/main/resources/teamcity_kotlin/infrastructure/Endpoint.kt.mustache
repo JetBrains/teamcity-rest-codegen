@@ -1,0 +1,15 @@
+package {{packageName}}.infrastructure
+
+class Endpoint(endpointPath: String) {
+    var endpointParts = HashMap<String, String?>()
+
+    fun putEndpointPart(name: String, value: Any?) {
+        if (value != null) {
+            endpointParts[name] = value.toString()
+        }
+    }
+
+    override fun toString() : String {
+        return ""
+    }
+}

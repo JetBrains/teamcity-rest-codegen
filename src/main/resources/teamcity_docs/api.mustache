@@ -1,0 +1,73 @@
+{{#operations}}
+{{#operation}}
+{{#-first}}[//]: # (title: {{classname}})
+[//]: # (auxiliary-id: {{classname}} method) {{/-first}}
+
+## {{nickname}}
+
+{{#summary}}{{{summary}}}{{/summary}}{{^summary}}The description will be available soon.{{/summary}}
+
+<table>
+
+<tr><td></td><td></td></tr>
+
+<tr><td>
+
+__Endpoint__
+
+</td>
+
+<td>
+
+```Shell
+{{path}}
+```
+
+
+</td></tr>
+
+<tr><td>
+
+__HTTP method__
+
+</td>
+
+<td>
+
+```Shell
+{{httpMethod}}
+```
+
+</td></tr>
+
+<tr><td>
+
+{{#hasParams}}__Parameters__
+
+</td>
+
+<td>
+
+{{/hasParams}}
+{{#allParams}}
+* `{{#optional}}(optional) {{/optional}}{{baseName}}: {{{dataType}}}`
+{{/allParams}}
+
+</td></tr>
+
+{{#returnType}}<tr><td>
+
+__Response__
+
+</td>
+
+<td>
+
+`{{returnType}}`
+
+</td></tr>
+
+{{/returnType}}
+</table>
+{{/operation}}
+{{/operations}}

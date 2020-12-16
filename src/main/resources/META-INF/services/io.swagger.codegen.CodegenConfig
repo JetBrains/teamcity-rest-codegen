@@ -1,0 +1,3 @@
+com.jetbrains.codegen.python.TeamCityPythonCodegen
+com.jetbrains.codegen.kotlin.TeamCityKotlinCodegen
+com.jetbrains.codegen.docs.TeamCityDocsCodegen

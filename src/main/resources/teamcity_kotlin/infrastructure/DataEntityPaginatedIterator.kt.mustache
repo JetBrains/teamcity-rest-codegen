@@ -1,0 +1,41 @@
+package {{packageName}}.infrastructure
+
+import {{packageName}}.base.DataEntity
+import {{packageName}}.base.PaginatedEntity
+import org.slf4j.LoggerFactory
+
+class DataEntityPaginatedIterator<T : DataEntity>(
+        var nextHref: String?,
+        var clientConfig: ClientConfig,
+        items: List<T>
+) : DataEntityIterator<T>(items) {
+
+    val LOG = LoggerFactory.getLogger(this.javaClass.name)
+
+    private inline fun <reified V : PaginatedEntity<T>> fetchNextPage() {
+        if (nextHref != null) {
+            LOG.debug("Loading next page of the collection; nextHref: $nextHref")
+
+            val requestConfig = RequestConfig.fromExistingPath(
+                    RequestMethod.GET,
+                    nextHref!!
+            )
+            val api = ApiClient(clientConfig)
+            val response = api.request<V>(requestConfig)
+            val entity = ApiClient.processResponse(response)
+
+            this.items = entity.items()
+            this.nextHref = entity.nextHref
+        }
+        LOG.debug("End of paginated collection reached.")
+    }
+
+    override fun hasNext(): Boolean {
+        return if (!super.hasNext()) {
+            fetchNextPage<PaginatedEntity<T>>()
+            super.hasNext()
+        } else {
+            super.hasNext()
+        }
+    }
+}

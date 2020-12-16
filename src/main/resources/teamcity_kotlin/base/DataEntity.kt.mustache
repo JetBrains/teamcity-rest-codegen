@@ -1,0 +1,32 @@
+package {{packageName}}.base
+
+import {{packageName}}.infrastructure.*
+import org.slf4j.LoggerFactory
+
+open class DataEntity {
+    @Transient open val href: String? = null
+
+    val LOG = LoggerFactory.getLogger(this.javaClass.name)
+
+    inline fun <reified T : Any> requestCachedHref(clientConfig: ClientConfig, extraHeaders: Map<String, String>): ApiInfrastructureResponse<T> {
+        when (href) {
+            null -> throw IllegalArgumentException("No cached href for the instance, can`t reload")
+            else -> {
+                val localVariableConfig = RequestConfig(
+                        RequestMethod.GET,
+                        href!!,
+                        headers = extraHeaders
+                )
+
+                val api = ApiClient(clientConfig)
+                LOG.debug("Reloading entity from the REST API; href: $href")
+                return api.request(localVariableConfig)
+            }
+        }
+    }
+
+    inline fun <reified T: DataEntity> reloadFromApi (clientConfig: ClientConfig, extraHeaders: Map<String, String> = emptyMap()): T {
+        val response = requestCachedHref<T>(clientConfig, extraHeaders)
+        return ApiClient.processResponse(response)
+    }
+}

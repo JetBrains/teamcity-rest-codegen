@@ -1,0 +1,4 @@
+{{#description}}
+    /* {{{description}}} */
+{{/description}}
+    @SerializedName("{{baseName}}"){{#vendorExtensions.x-defined-in-base}} override{{/vendorExtensions.x-defined-in-base}} val {{{nameInCamelCase}}}: {{#isEnum}}{{classname}}.{{nameInCamelCase}}Enum{{/isEnum}}{{^isEnum}}{{{datatype}}}{{/isEnum}}
