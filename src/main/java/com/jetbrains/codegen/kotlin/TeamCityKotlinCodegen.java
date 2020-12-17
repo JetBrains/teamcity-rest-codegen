@@ -102,8 +102,6 @@ public class TeamCityKotlinCodegen extends KotlinClientCodegen implements Codege
         supportingFiles.add(new SupportingFile("infrastructure/Errors.kt.mustache", infrastructureFolder, "Errors.kt"));
 
         supportingFiles.add(new SupportingFile("infrastructure/ClientConfig.kt.mustache", infrastructureFolder, "ClientConfig.kt"));
-        supportingFiles.add(new SupportingFile("infrastructure/DataEntityIterator.kt.mustache", infrastructureFolder, "DataEntityIterator.kt"));
-        supportingFiles.add(new SupportingFile("infrastructure/DataEntityPaginatedIterator.kt.mustache", infrastructureFolder, "DataEntityPaginatedIterator.kt"));
 
         supportingFiles.add(new SupportingFile("base/DataEntity.kt.mustache", baseFolder, "DataEntity.kt"));
         supportingFiles.add(new SupportingFile("base/ListEntity.kt.mustache", baseFolder, "ListEntity.kt"));

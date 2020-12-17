@@ -1,11 +1,10 @@
 package {{packageName}}.infrastructure
 
 import okhttp3.*
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.util.regex.Pattern
-import org.slf4j.LoggerFactory
-import kotlin.jvm.Throws
 
 open class ApiClient(val clientConfig: ClientConfig) {
     companion object {
@@ -120,13 +119,22 @@ open class ApiClient(val clientConfig: ClientConfig) {
 
     inline fun <reified T : Any> request(requestConfig: RequestConfig, body: Any? = null): ApiInfrastructureResponse<T> {
         val httpUrl = HttpUrl.parse(clientConfig.baseUrl) ?: throw IllegalStateException("baseUrl is invalid.")
+
         var urlBuilder = httpUrl.newBuilder()
-                .addPathSegments(requestConfig.path.trimStart('/'))
+                .addPathSegments(
+                        requestConfig.path.trimStart('/')
+                )
+
         requestConfig.query.forEach { query ->
             query.value.forEach { queryValue ->
                 urlBuilder = urlBuilder.addQueryParameter(query.key, queryValue)
             }
         }
+
+        if (requestConfig.encodedQuery != null) {
+            urlBuilder.addEncodedPathSegment(requestConfig.encodedQuery)
+        }
+
         val url = urlBuilder.build()
         val headers = (defaultHeaders + requestConfig.headers).toMutableMap()
         LOG.info("[{}] {} | headers: {}", requestConfig.method, url, headers)

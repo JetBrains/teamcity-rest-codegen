@@ -4,12 +4,13 @@ import com.squareup.moshi.Json
 import com.google.gson.annotations.SerializedName
 import {{packageName}}.base.*
 import {{packageName}}.infrastructure.ApiClient
+import {{packageName}}.infrastructure.RequestConfig
 import java.time.LocalDateTime
 
 /**
 {{#vendorExtensions.x-description}}{{{vendorExtensions.x-description}}}{{/vendorExtensions.x-description}}
 {{#vars}}
- * @param {{nameInCamelCase}} {{{description}}}
+ * @param {{nameInCamelCase}} {{#vendorExtensions.x-description}}{{{vendorExtensions.x-description}}}{{/vendorExtensions.x-description}}
 {{/vars}}
  */
 {{^vendorExtensions.x-is-locator}}data {{/vendorExtensions.x-is-locator}}class {{classname}}(
@@ -35,6 +36,12 @@ import java.time.LocalDateTime
         {{/vendorExtensions.x-is-first-container-var}}
     {{/vars}}
     {{/vendorExtensions.x-is-list}}
+    {{#vendorExtensions.x-is-paginated}}
+    override fun requestNextPage(apiClient: ApiClient, requestConfig: RequestConfig): {{classname}} {
+        val response = apiClient.request<{{classname}}>(requestConfig)
+        return ApiClient.processResponse(response)
+    }
+    {{/vendorExtensions.x-is-paginated}}
 {{#hasEnums}}{{#vars}}{{#isEnum}}
     /**
     * {{{description}}}
