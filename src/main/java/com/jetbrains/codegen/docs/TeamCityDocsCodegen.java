@@ -8,6 +8,7 @@ import io.swagger.models.Swagger;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.MapProperty;
 import io.swagger.models.properties.Property;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import sun.reflect.generics.tree.Tree;
 
@@ -221,6 +222,10 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
         return String.format("[%s](%s.md)", visiblePart, linkPart);
     }
 
+    private String encaseInSpaces(String rawString) {
+        return String.format(" %s ", rawString);
+    }
+
     @Override
     public CodegenOperation fromOperation(String path, String httpMethod, Operation operation, Map<String, Model> definitions, Swagger swagger) {
         CodegenOperation op = super.fromOperation(path, httpMethod, operation, definitions, swagger);
@@ -271,6 +276,20 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
             //patch data format with a link to <model>.md
             if (prop.dataFormat != null && allDefinitions.containsKey(prop.dataFormat)) {
                 prop.dataFormat = patchWithModelLink(prop.dataFormat);
+            }
+        }
+
+        //patch LocatorEntity description with a link to <model>.md
+        if (m.vendorExtensions.get("x-is-locator") != null) {
+            Object description = m.vendorExtensions.get("x-description");
+            if (description != null) {
+                String newDescription = (String) description;
+                for (String key: allDefinitions.keySet()) {
+                    String lookupKey = encaseInSpaces(camelize(key, false));
+                    String replacementKey = encaseInSpaces(patchWithModelLink(key));
+                    newDescription = newDescription.replace(lookupKey, replacementKey);
+                }
+                m.vendorExtensions.put("x-description", newDescription);
             }
         }
 
@@ -354,4 +373,24 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
 //
 //        return objs;
 //    }
+
+    @Override
+    public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
+        Map<String, Object> objsMap = super.postProcessOperations(objs);
+
+        HashMap<String, Object> operationsMap = (HashMap<String, Object>) objsMap.get("operations");
+        ArrayList<CodegenOperation> operations = (ArrayList<CodegenOperation>) operationsMap.get("operation");
+        operations.sort((o1, o2) -> {
+            if (o1.path.equals(o2.path)) {
+                return ObjectUtils.compare(o1.httpMethod, o2.httpMethod);
+            }
+            else {
+                return o1.path.compareTo(o2.path);
+            }
+        });
+
+        operationsMap.put("operation", operations);
+        objsMap.put("operations", operationsMap);
+        return objsMap;
+    }
 }

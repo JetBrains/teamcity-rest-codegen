@@ -4,10 +4,15 @@ import io.swagger.codegen.*;
 import io.swagger.codegen.languages.KotlinClientCodegen;
 import io.swagger.models.Model;
 import io.swagger.models.properties.Property;
+import io.swagger.models.properties.StringProperty;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import sun.reflect.generics.tree.Tree;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TeamCityKotlinCodegen extends KotlinClientCodegen implements CodegenConfig {
     String X_SUBPACKAGE = "x-subpackage";
