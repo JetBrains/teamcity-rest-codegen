@@ -1,0 +1,26 @@
+from dataclasses import dataclass, field
+from .listEntity import ListEntity
+from {{packageName}}.request_handler import AbstractRequestHandler
+from {{packageName}}.content_handler import ContentHandler, JSONContentHandler
+
+
+@dataclass
+class PaginatedEntity(ListEntity):
+    next_href: 'str' = field(default=None, metadata={'attr_map': 'nextHref'})
+    prev_href: 'str' = field(default=None, metadata={'attr_map': 'prevHref'})
+
+    def _load_page(self, href: str, handler: AbstractRequestHandler, content_handler: ContentHandler):
+        response = handler.request(href, 'GET')
+        response_dict = content_handler.deserialize(response)
+        self._reload_from_dict(response_dict)
+        self._index = 0
+
+    def load_prev(self, handler: AbstractRequestHandler, content_handler: ContentHandler = JSONContentHandler()):
+        if not self.prev_href:
+            raise StopIteration(f'Reached start of paginated data collection.')
+        self._load_page(self.prev_href, handler, content_handler)
+
+    def load_next(self, handler: AbstractRequestHandler, content_handler: ContentHandler = JSONContentHandler()):
+        if not self.next_href:
+            raise StopIteration(f'Reached end of paginated data collection.')
+        self._load_page(self.next_href, handler, content_handler)

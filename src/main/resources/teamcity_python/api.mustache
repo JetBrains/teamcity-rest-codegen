@@ -1,0 +1,60 @@
+import {{modelPackage}} as models
+from {{packageName}}.request_handler import AbstractRequestHandler, format_endpoint
+from {{packageName}}.content_handler import ContentHandler, JSONContentHandler
+
+
+{{#operations}}
+{{#operation}}
+def {{operationId}}(
+        handler: AbstractRequestHandler,
+    {{#sortParamsByRequiredFlag}}
+        {{#allParams}}
+                {{#required}}
+        {{paramName}}: {{#dataFormat}}models.{{dataFormat}}{{/dataFormat}}{{^dataFormat}}{{^isPrimitiveType}}models.{{/isPrimitiveType}}{{dataType}}{{/dataFormat}},
+                {{/required}}
+                {{^required}}
+        {{paramName}}: {{#dataFormat}}models.{{dataFormat}}{{/dataFormat}}{{^dataFormat}}{{^isPrimitiveType}}models.{{/isPrimitiveType}}{{dataType}}{{/dataFormat}} = None,
+                {{/required}}
+        {{/allParams}}
+    {{/sortParamsByRequiredFlag}}
+        content_handler: ContentHandler = JSONContentHandler()){{#returnType}} -> {{^returnTypeIsPrimitive}}models.{{/returnTypeIsPrimitive}}{{returnType}}{{/returnType}}:
+    """{{#summary}}{{{summary}}}{{/summary}}
+    Runs {{httpMethod}} request on "{{path}}" endpoint.
+    """
+    endpoint = format_endpoint(
+        '{{path}}',
+        {{#pathParams}}
+        {{baseName}}={{paramName}},
+        {{/pathParams}}
+        {{#queryParams}}
+        {{baseName}}={{paramName}}{{^-last}},{{/-last}}
+        {{/queryParams}}
+    )
+
+    {{#bodyParams}}
+    {{^isPrimitiveType}}
+    serialized_body = None
+    if {{paramName}}:
+        serialized_body = content_handler.serialize({{paramName}}.to_dict(), root_node_name={{#dataFormat}}models.{{dataFormat}}{{/dataFormat}}{{^dataFormat}}{{^isPrimitiveType}}models.{{/isPrimitiveType}}{{dataType}}{{/dataFormat}}.model_name())
+
+    {{/isPrimitiveType}}
+    {{#isPrimitiveType}}
+    serialized_body = {{paramName}}
+    {{/isPrimitiveType}}
+    {{/bodyParams}}
+    {{#returnType}}response = {{/returnType}}handler.request(endpoint, '{{httpMethod}}'{{#bodyParams}}, {{paramName}}=serialized_body{{/bodyParams}})
+    {{#returnType}}
+    {{#returnTypeIsPrimitive}}
+    return {{returnType}}(response.text)
+    {{/returnTypeIsPrimitive}}
+    {{^returnTypeIsPrimitive}}
+    response_dict = content_handler.deserialize(response)
+    return models.{{returnType}}.from_dict(response_dict){{/returnTypeIsPrimitive}}
+    {{/returnType}}
+    {{^returnType}}
+    return None
+    {{/returnType}}
+
+
+{{/operation}}
+{{/operations}}

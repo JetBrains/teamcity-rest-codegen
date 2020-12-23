@@ -1,0 +1,21 @@
+import json
+import requests as rqst
+from abc import abstractmethod, ABC
+
+
+class ContentHandler(ABC):
+    @abstractmethod
+    def deserialize(self, response) -> dict:
+        pass
+
+    @abstractmethod
+    def serialize(self, dictionary: dict, root_node_name: str = None) -> str:
+        pass
+
+
+class JSONContentHandler(ContentHandler):
+    def deserialize(self, response: rqst.Response) -> dict:
+        return json.loads(response.text)
+
+    def serialize(self, dictionary: dict, root_node_name: str = None) -> str:
+        return json.dumps(dictionary)

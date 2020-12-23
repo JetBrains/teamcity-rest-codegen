@@ -1,0 +1,18 @@
+from dataclasses import dataclass
+from .dataEntity import DataEntity
+import logging
+
+LOGGER = logging.getLogger(__name__)
+
+
+@dataclass
+class LocatorEntity(DataEntity):
+    def __str__(self):
+        dimensions = []
+
+        for key, value in self.to_dict().items():
+            dimensions.append(f'{key}:({value})')
+
+        result = ','.join(dimensions)
+        LOGGER.debug(f'Got locator string {result} for {type(self).class_name()}.')
+        return result

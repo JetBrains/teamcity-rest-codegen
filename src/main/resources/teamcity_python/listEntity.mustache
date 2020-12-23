@@ -1,0 +1,24 @@
+from dataclasses import dataclass, field
+from .dataEntity import DataEntity
+
+
+@dataclass
+class ListEntity(DataEntity):
+    count: 'int' = field(default=None, metadata={'attr_map': 'count'})
+
+    @property
+    def items(self):
+        return []
+
+    def __iter__(self):
+        self._index = 0
+        return self
+
+    def __next__(self) -> DataEntity:
+        count = self.count if self.count else len(self.items)
+        if self._index < count:
+            item = self.items[self._index]
+            self._index += 1
+            return item
+        else:
+            raise StopIteration

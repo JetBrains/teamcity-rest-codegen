@@ -1,0 +1,33 @@
+import {{modelPackage}} as models
+import {{basePackage}} as base
+from dataclasses import dataclass, field
+from typing import List
+
+
+{{#models}}
+{{#model}}
+@dataclass
+class {{classname}}(base.{{vendorExtensions.x-object-type}}):
+    """{{#vendorExtensions.x-description}}{{vendorExtensions.x-description}}{{/vendorExtensions.x-description}}{{^vendorExtensions.x-description}}The description will be available soon.{{/vendorExtensions.x-description}}"""
+{{#vars}}
+    {{^isContainer}}
+    {{name}}: '{{^isPrimitiveType}}models.{{/isPrimitiveType}}{{{datatype}}}' = field({{^required}}default=None, {{/required}}metadata={'attr_map': '{{baseName}}'})
+    {{/isContainer}}
+    {{#isContainer}}
+    {{name}}: 'List[{{^isPrimitiveType}}models.{{/isPrimitiveType}}{{{complexType}}}]' = field({{^required}}default=None, {{/required}}metadata={'attr_map': '{{baseName}}'})
+
+    @property
+    def items(self):
+        return self.{{name}}
+
+    def __next__(self) -> '{{^isPrimitiveType}}models.{{/isPrimitiveType}}{{{complexType}}}':
+        return super().__next__()
+    {{/isContainer}}
+{{/vars}}
+
+    @classmethod
+    def model_name(cls):
+        return '{{name}}'
+
+{{/model}}
+{{/models}}

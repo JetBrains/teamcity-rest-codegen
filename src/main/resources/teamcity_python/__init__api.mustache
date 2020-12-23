@@ -1,0 +1,5 @@
+from __future__ import absolute_import
+
+# import apis into api package
+{{#apiInfo}}{{#apis}}import {{apiPackage}}.{{classVarName}}
+{{/apis}}{{/apiInfo}}
