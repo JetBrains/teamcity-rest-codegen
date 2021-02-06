@@ -3,9 +3,37 @@
 [//]: # (title: {{classname}})
 [//]: # (auxiliary-id: {{classname}} model)
 
-{{#vendorExtensions.x-description}}{{{vendorExtensions.x-description}}}{{/vendorExtensions.x-description}}{{^vendorExtensions.x-description}}The description will be available soon.{{/vendorExtensions.x-description}}
+{{#description}}{{{description}}}{{/description}}{{^description}}The description will be available soon.{{/description}}
+{{#vendorExtensions.x-help-article-link}}
+
+Related Help article: [{{{vendorExtensions.x-help-article-name}}}]({{{vendorExtensions.x-help-article-link}}})
+{{/vendorExtensions.x-help-article-link}}
+{{#vendorExtensions.x-is-locator}}
+Examples:
+{{#vendorExtensions.x-model-examples}}
+* {{{.}}}
+{{/vendorExtensions.x-model-examples}}
+{{/vendorExtensions.x-is-locator}}
 
 {{#vendorExtensions.x-is-locator}}{{>locator.param.table}}{{/vendorExtensions.x-is-locator}}{{^vendorExtensions.x-is-locator}}{{>model.param.table}}{{/vendorExtensions.x-is-locator}}
+
+{{^vendorExtensions.x-is-locator}}
+Below, you can find a full schema of this object, in XML and JSON formats. You can choose what fields to submit depending on your current needs. Different methods might expect different fields: the best approach is to request this entity via `GET` and use the response as a base for the following `POST` request.
+
+A link to another object implies that you can substitute it with the schema of the linked object, if it is required for your call.
+
+<tabs>
+
+```XML
+{{{vendorExtensions.x-xml-example}}}
+```
+
+```JSON
+{{{vendorExtensions.x-json-example}}}
+```
+
+</tabs>
+{{/vendorExtensions.x-is-locator}}
 
 {{/model}}
 {{/models}}

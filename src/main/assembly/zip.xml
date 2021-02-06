@@ -1,0 +1,30 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/3.1.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/3.1.0 http://maven.apache.org/xsd/assembly-3.1.0.xsd">
+    <id>zip</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <formats>
+        <format>zip</format>
+    </formats>
+<!--    <fileSets>-->
+<!--        <fileSet>-->
+<!--            <directory>${project.build.directory}/lib</directory>-->
+<!--        </fileSet>-->
+<!--    </fileSets>-->
+    <files>
+        <file>
+            <source> ${project.build.directory}/${project.artifactId}.jar</source>
+            <outputDirectory>/</outputDirectory>
+        </file>
+    </files>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <excludes>
+                <exclude>${project.groupId}:${project.artifactId}:jar:*</exclude>
+            </excludes>
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+        </dependencySet>
+    </dependencySets>
+</assembly>

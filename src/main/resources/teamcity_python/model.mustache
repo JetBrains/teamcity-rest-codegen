@@ -8,7 +8,7 @@ from typing import List
 {{#model}}
 @dataclass
 class {{classname}}(base.{{vendorExtensions.x-object-type}}):
-    """{{#vendorExtensions.x-description}}{{vendorExtensions.x-description}}{{/vendorExtensions.x-description}}{{^vendorExtensions.x-description}}The description will be available soon.{{/vendorExtensions.x-description}}"""
+    """{{#description}}{{description}}{{/description}}{{^description}}The description will be available soon.{{/description}}"""
 {{#vars}}
     {{^isContainer}}
     {{name}}: '{{^isPrimitiveType}}models.{{/isPrimitiveType}}{{{datatype}}}' = field({{^required}}default=None, {{/required}}metadata={'attr_map': '{{baseName}}'})

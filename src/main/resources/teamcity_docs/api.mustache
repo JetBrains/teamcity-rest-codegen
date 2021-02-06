@@ -40,20 +40,33 @@ __HTTP method__
 
 </td></tr>
 
-<tr><td>
+{{#hasProduces}}<tr><td>
 
-{{#hasParams}}__Parameters__
+__Content type__
 
 </td>
 
 <td>
 
-{{/hasParams}}
+{{#produces}}
+* `{{{mediaType}}}`
+{{/produces}}
+
+</td></tr>{{/hasProduces}}
+
+{{#hasParams}}<tr><td>
+
+__Parameters__
+
+</td>
+
+<td>
+
 {{#allParams}}
 * `{{#optional}}(optional) {{/optional}}{{baseName}}: {{{dataType}}}`
 {{/allParams}}
 
-</td></tr>
+</td></tr>{{/hasParams}}
 
 {{#returnType}}<tr><td>
 

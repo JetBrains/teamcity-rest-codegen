@@ -2,20 +2,20 @@ package com.jetbrains.codegen.docs;
 
 import io.swagger.codegen.*;
 import io.swagger.models.Model;
-import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.MapProperty;
 import io.swagger.models.properties.Property;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import sun.reflect.generics.tree.Tree;
+import org.json.JSONObject;
+import org.json.XML;
 
 import java.io.File;
 import java.util.*;
 
 public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig {
+    private TeamCityExampleGenerator exampleGenerator;
     protected String invokerPackage = "io.swagger.client";
     protected String groupId = "io.swagger";
     protected String artifactId = "swagger-client";
@@ -247,25 +247,60 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
                 param.dataType = String.format("%s[<%s>](%s.md)", param.dataType, capitalizedNewDataType, newDataType);
             }
         }
+
         return op;
+    }
+
+    private TeamCityExampleGenerator getExampleGeneratorInstance() {
+        return this.exampleGenerator;
+    }
+
+    private void setExampleGeneratorInstance(TeamCityExampleGenerator generator) {
+        this.exampleGenerator = generator;
+    }
+
+    @Override
+    protected List<Map<String, String>> getExamples(Map<String, Model> definitions, Map<String, Object> examples, List<String> mediaTypes, Object object) {
+        TeamCityExampleGenerator generator = getExampleGeneratorInstance();
+        if (generator == null) {
+            generator = new TeamCityExampleGenerator(definitions);
+            setExampleGeneratorInstance(generator);
+        }
+
+        if (object instanceof Property) {
+            Property responseProperty = (Property) object;
+            return generator.generate(examples, mediaTypes, responseProperty);
+        }
+        // this must be a model name instead
+        return generator.generate(examples, mediaTypes, object.toString());
     }
 
     @Override
     public CodegenModel fromModel(String name, Model model, Map<String, Model> allDefinitions) {
         CodegenModel m = super.fromModel(name, model, allDefinitions);
-        for (CodegenProperty prop : m.vars) {
 
-            //patch ListEntity description with a link to <model>.md
-            if (prop.vendorExtensions.get("x-is-first-container-var") != null) {
-                String lookupKey = camelize(prop.complexType);
-                String replacement = patchWithModelLink(prop.complexType);
-                Object description = m.vendorExtensions.get("x-description");
-                if (description != null) {
-                    String newDescription = description.toString().replace(lookupKey, replacement);
-                    m.vendorExtensions.put("x-description", newDescription);
+        String baseEntity = (String) m.vendorExtensions.get("x-base-entity");
+        if (baseEntity != null) {
+            String lookupKey = camelize(baseEntity);
+            String replacement = patchWithModelLink(baseEntity);
+            String description = m.description;
+
+            if (description != null) {
+                String newDescription = description.replace(lookupKey, replacement);
+
+                //patch LocatorEntity description with a link to <model>.md
+                if (m.vendorExtensions.get("x-is-locator") != null) {
+                    newDescription = newDescription.replace(
+                            "Represents a locator string",
+                            "Represents a [locator string](teamcity-rest-api-documentation.md#Locator)"
+                    );
                 }
+                m.description = newDescription;
             }
+        }
 
+
+        for (CodegenProperty prop : m.vars) {
             //patch data type with a link to <model>.md
             if (!prop.isContainer && !this.primitiveTypes.contains(prop.datatype.toLowerCase())) {
                 prop.datatype = patchWithModelLink(prop.datatype);
@@ -279,19 +314,28 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
             }
         }
 
-        //patch LocatorEntity description with a link to <model>.md
-        if (m.vendorExtensions.get("x-is-locator") != null) {
-            Object description = m.vendorExtensions.get("x-description");
-            if (description != null) {
-                String newDescription = (String) description;
-                for (String key: allDefinitions.keySet()) {
-                    String lookupKey = encaseInSpaces(camelize(key, false));
-                    String replacementKey = encaseInSpaces(patchWithModelLink(key));
-                    newDescription = newDescription.replace(lookupKey, replacementKey);
+        List<String> mimeTypes = new ArrayList<>(
+                Arrays.asList(
+                        TeamCityExampleGenerator.MIME_TYPE_JSON,
+                        TeamCityExampleGenerator.MIME_TYPE_XML
+                )
+        );
+
+        List<Map<String, String>> examples = getExamples(allDefinitions, null, mimeTypes, name);
+        examples.forEach((map) -> {
+            if (map.containsKey(TeamCityExampleGenerator.CONTENT_TYPE)) {
+                String contentType = map.get(TeamCityExampleGenerator.CONTENT_TYPE);
+                String example = map.get(TeamCityExampleGenerator.EXAMPLE);
+                switch (contentType) {
+                    case TeamCityExampleGenerator.MIME_TYPE_JSON:
+                        m.vendorExtensions.put("x-json-example", example);
+                        break;
+                    case TeamCityExampleGenerator.MIME_TYPE_XML:
+                        m.vendorExtensions.put("x-xml-example", example);
+                        break;
                 }
-                m.vendorExtensions.put("x-description", newDescription);
             }
-        }
+        });
 
         return m;
     }
@@ -308,14 +352,14 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
         TreeMap<String, ArrayList<Object>> groups = new TreeMap<>();
 
         for (Object model : models) {
-            CodegenModel cmodel = (CodegenModel) ((HashMap<String, Object>) model).get("model");
+            CodegenModel cModel = (CodegenModel) ((HashMap<String, Object>) model).get("model");
             HashMap<String, Object> modelMap = new HashMap<>();
-            modelMap.put("model", cmodel);
+            modelMap.put("model", cModel);
 
-            if (!cmodel.vendorExtensions.containsKey("x-subpackage")) {
+            if (!cModel.vendorExtensions.containsKey("x-subpackage")) {
                 ungroupedModels.add(modelMap);
             } else {
-                String subpackage = (String) cmodel.vendorExtensions.get("x-subpackage");
+                String subpackage = (String) cModel.vendorExtensions.get("x-subpackage");
                 if (subpackage.equals("locator")) {
                     locators.add(modelMap);
                 } else {
@@ -341,38 +385,6 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
 
         return objs;
     }
-
-//    @Override
-//    public Map<String, Object> postProcessAllModels(Map<String, Object> objs) {
-//
-//        List<String> definitionNames = new ArrayList<>();
-//
-//        for (Object modelObject : objs.values()) {
-//            CodegenModel model = (CodegenModel) modelObject;
-//            definitionNames.add(model.classname);
-//        }
-//
-//        for (Map.Entry<String, Object> entry : objs.entrySet()) {
-//            String key = entry.getKey();
-//            CodegenModel model = (CodegenModel) entry.getValue();
-//
-//            //patch description with a link to <model>.md
-//            if (model.vendorExtensions.containsKey("x-description")) {
-//                String description = (String) model.vendorExtensions.get("x-description");
-//                for (String modelName : definitionNames) {
-//                    if (modelName != null && description.contains(modelName)) {
-//                        String newModelName = camelize(modelName, true);
-//                        String patchedModelName = String.format("[%s](%s.md)", modelName, newModelName);
-//                        description.replace(modelName, patchedModelName);
-//                    }
-//                }
-//                model.vendorExtensions.put("x-description", description);
-//                objs.put(key, model);
-//            }
-//        }
-//
-//        return objs;
-//    }
 
     @Override
     public Map<String, Object> postProcessOperations(Map<String, Object> objs) {
