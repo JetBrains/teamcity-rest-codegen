@@ -39,10 +39,27 @@ __HTTP method__
 ```
 
 </td></tr>
+{{#hasConsumes}}
 
-{{#hasProduces}}<tr><td>
+<tr><td>
 
-__Content type__
+__Consumes__
+
+</td>
+
+<td>
+
+{{#consumes}}
+* `{{{mediaType}}}`
+{{/consumes}}
+
+</td></tr>
+
+{{/hasConsumes}}
+{{#hasProduces}}
+<tr><td>
+
+__Produces__
 
 </td>
 
@@ -52,9 +69,11 @@ __Content type__
 * `{{{mediaType}}}`
 {{/produces}}
 
-</td></tr>{{/hasProduces}}
+</td></tr>
+{{/hasProduces}}
 
-{{#hasParams}}<tr><td>
+{{#hasParams}}
+<tr><td>
 
 __Parameters__
 
@@ -66,9 +85,11 @@ __Parameters__
 * `{{#optional}}(optional) {{/optional}}{{baseName}}: {{{dataType}}}`
 {{/allParams}}
 
-</td></tr>{{/hasParams}}
+</td></tr>
+{{/hasParams}}
 
-{{#returnType}}<tr><td>
+{{#returnType}}
+<tr><td>
 
 __Response__
 

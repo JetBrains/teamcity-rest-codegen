@@ -15,9 +15,12 @@ Examples:
 {{/vendorExtensions.x-model-examples}}
 {{/vendorExtensions.x-is-locator}}
 
+## Properties
 {{#vendorExtensions.x-is-locator}}{{>locator.param.table}}{{/vendorExtensions.x-is-locator}}{{^vendorExtensions.x-is-locator}}{{>model.param.table}}{{/vendorExtensions.x-is-locator}}
 
 {{^vendorExtensions.x-is-locator}}
+## Schema
+
 Below, you can find a full schema of this object, in XML and JSON formats. You can choose what fields to submit depending on your current needs. Different methods might expect different fields: the best approach is to request this entity via `GET` and use the response as a base for the following `POST` request.
 
 A link to another object implies that you can substitute it with the schema of the linked object, if it is required for your call.

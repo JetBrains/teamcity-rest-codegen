@@ -1,33 +1,18 @@
 package com.jetbrains.codegen.docs;
 
-import io.swagger.codegen.DefaultCodegen;
 import io.swagger.models.Model;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.properties.*;
 import io.swagger.util.Json;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.json.JSONObject;
-import org.json.XML;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
+import javax.xml.transform.TransformerException;
 import java.math.BigDecimal;
 import java.util.*;
 
+import static io.swagger.codegen.DefaultCodegen.camelize;
 import static io.swagger.models.properties.StringProperty.Format.URI;
 import static io.swagger.models.properties.StringProperty.Format.URL;
 
@@ -43,7 +28,7 @@ public class TeamCityExampleGenerator {
     private static final String OUTPUT = "output";
     private static final String NONE = "none";
 
-    private static final Integer MAX_MODEL_DEPTH = 6;
+    private static final Integer MAX_MODEL_DEPTH = 9;
 
     protected Map<String, Model> definitions;
     private final Random random;
@@ -68,35 +53,6 @@ public class TeamCityExampleGenerator {
         }
     }
 
-    private String camelize(String input) {
-        return DefaultCodegen.camelize(input, true);
-    }
-
-    private String convertJsonToXml(String input, String nodeName) {
-        JSONObject json = new JSONObject(input);
-        return XML.toString(json, nodeName);
-    }
-
-    private String prettifyXml(String input) {
-        Transformer transformer;
-        try {
-            transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "yes");
-
-            Source xmlInput = new StreamSource(new StringReader(input));
-            StringWriter stringWriter = new StringWriter();
-            StreamResult xmlOutput = new StreamResult(stringWriter);
-
-            transformer.transform(xmlInput, xmlOutput);
-            return xmlOutput.getWriter().toString();
-        } catch (Exception e) {
-            logger.warn(e.getMessage());
-            return input;
-        }
-    }
-
     public List<Map<String, String>> generate(Map<String, Object> examples, List<String> mediaTypes, Property property) {
         List<Map<String, String>> output = new ArrayList<>();
         Set<String> processedModels = new HashSet<>();
@@ -116,12 +72,16 @@ public class TeamCityExampleGenerator {
                         output.add(kv);
                     }
                 } else if (property != null && mediaType.startsWith(MIME_TYPE_XML)) {
-                    String jsonExample = Json.pretty(resolvePropertyToExample("", mediaType, property, processedModels));
-                    String xmlExample = prettifyXml(
-                            convertJsonToXml(jsonExample, property.getName())
-                    );
-                    kv.put(EXAMPLE, xmlExample);
-                    output.add(kv);
+                    String example = null;
+                    try {
+                        example = new TeamCityXMLExampleGenerator(this.definitions).propertyToXml(property);
+                    } catch (ParserConfigurationException | TransformerException e) {
+                        logger.warn(e.getMessage());
+                    }
+                    if (example != null) {
+                        kv.put(EXAMPLE, example);
+                        output.add(kv);
+                    }
                 }
             }
         } else {
@@ -164,14 +124,18 @@ public class TeamCityExampleGenerator {
                         }
                     } else if (mediaType.startsWith(MIME_TYPE_XML)) {
                         logger.debug("Trying to process as XML");
-                        final Model model = this.definitions.get(modelName);
+                        final ModelImpl model = (ModelImpl) this.definitions.get(modelName);
                         if (model != null) {
-                            String jsonExample = Json.pretty(resolveModelToExample(modelName, mediaType, model, processedModels));
-                            String xmlExample = prettifyXml(
-                                    convertJsonToXml(jsonExample, modelName)
-                            );
-                            kv.put(EXAMPLE, xmlExample);
-                            output.add(kv);
+                            String example = null;
+                            try {
+                                example = new TeamCityXMLExampleGenerator(this.definitions).modelToXml(modelName, model);
+                            } catch (ParserConfigurationException | TransformerException e) {
+                                logger.warn(e.getMessage());
+                            }
+                            if (example != null) {
+                                kv.put(EXAMPLE, example);
+                                output.add(kv);
+                            }
                         }
                     }
                 }
@@ -285,7 +249,7 @@ public class TeamCityExampleGenerator {
             logger.debug("Ref property, simple name: " + simpleName);
             Model model = definitions.get(simpleName);
             if (model != null) {
-                return resolveModelToExample(simpleName, mediaType, model, processedModels, depth + 1);
+                return resolveModelToExample(simpleName, mediaType, model, processedModels, depth + 2);
             }
             logger.warn("Ref property with empty model.");
         } else if (property instanceof UUIDProperty) {
@@ -303,7 +267,7 @@ public class TeamCityExampleGenerator {
             Integer depth
     ) {
         if (depth >= MAX_MODEL_DEPTH) {
-            return String.format("[[[%s...|%s.md]]]", name, camelize(name));
+            return String.format("[[[%s...|%s.md]]]", name, camelize(name, true));
         }
         if (processedModels.contains(name) && model.getExample() != null) {
             return model.getExample();

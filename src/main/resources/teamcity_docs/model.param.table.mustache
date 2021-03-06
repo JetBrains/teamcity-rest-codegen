@@ -1,6 +1,6 @@
 <table>
 
-<tr><td>Field</td><td>Data type</td></tr>
+<tr><td>Field</td><td>Data type</td>{{#hasEnums}}<td>Allowed values</td>{{/hasEnums}}</tr>
 
 {{#vars}}
 <tr><td>
@@ -14,6 +14,16 @@
 
 `{{#isContainer}}List<{{complexType}}>{{/isContainer}}{{^isContainer}}{{{datatype}}}{{/isContainer}}`
 
-</td></tr>
+</td>{{#hasEnums}}
+
+<td>
+
+{{#isEnum}}{{#allowableValues}}
+{{#values}}
+* `{{{.}}}`
+{{/values}}
+{{/allowableValues}}{{/isEnum}}
+
+</td>{{/hasEnums}}</tr>
 {{/vars}}
 </table>

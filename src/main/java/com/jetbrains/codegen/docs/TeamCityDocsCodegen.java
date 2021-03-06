@@ -8,8 +8,6 @@ import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
-import org.json.XML;
 
 import java.io.File;
 import java.util.*;

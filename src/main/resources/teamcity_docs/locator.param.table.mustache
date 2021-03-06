@@ -25,6 +25,14 @@
 <td>{{#description}}
 
 {{{description}}}{{/description}}
+{{#hasEnums}}
+{{#isEnum}}
+Supported values: {{#allowableValues}}
+{{#values}}
+* `{{{.}}}`
+{{/values}}
+{{/allowableValues}}{{/isEnum}}
+{{/hasEnums}}
 
 </td></tr>
 {{/vars}}
