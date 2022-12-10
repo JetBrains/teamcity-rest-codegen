@@ -9,8 +9,10 @@ import io.swagger.models.properties.Property;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Console;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig {
     private TeamCityExampleGenerator exampleGenerator;
@@ -357,7 +359,16 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
             if (!cModel.vendorExtensions.containsKey("x-subpackage")) {
                 ungroupedModels.add(modelMap);
             } else {
-                String subpackage = (String) cModel.vendorExtensions.get("x-subpackage");
+                String rawSubpackageString = (String) cModel.vendorExtensions.get("x-subpackage");
+                String subpackage = StringUtils.capitalize(
+                    Arrays.stream(
+                        rawSubpackageString
+                            .split("\\."))
+                            .map(StringUtils::capitalize)
+                            .collect(Collectors.joining()
+                    )
+                );
+
                 if (subpackage.equals("locator")) {
                     locators.add(modelMap);
                 } else {
@@ -371,8 +382,7 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
 
         for (Map.Entry<String, ArrayList<Object>> entry : groups.entrySet()) {
             HashMap<String, Object> packageMap = new HashMap<>();
-            String capitalizedKey = entry.getKey().substring(0, 1).toUpperCase() + entry.getKey().substring(1);
-            packageMap.put("subpackage", capitalizedKey);
+            packageMap.put("subpackage", entry.getKey());
             packageMap.put("models", entry.getValue());
             groupedModels.add(packageMap);
         }
