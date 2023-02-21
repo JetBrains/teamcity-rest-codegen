@@ -73,7 +73,7 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
 
         supportingFiles.clear();
         supportingFiles.add(
-                new SupportingFile("tcr.tree.mustache", "", "tcr.tree")
+                new SupportingFile("autodoc.tree.mustache", "", "autodoc.tree")
         );
     }
 

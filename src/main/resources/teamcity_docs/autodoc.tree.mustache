@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE product-profile
+		SYSTEM "https://resources.jetbrains.com/stardust/product-profile.dtd">
+<product-profile id="autodoc" name="Autodoc" start-page="agent.md" status="release">
+
+<chunk include-id="autodoc-tree">
+	<toc-element toc-title="Models">
+        {{#models}}
+            {{#groupedModels}}
+            <toc-element toc-title="{{subpackage}}">
+            {{#models}}
+            {{#model}}
+                <toc-element id="{{classFilename}}.md" show-structure-for="chapter" show-structure-depth="4"/>
+            {{/model}}
+            {{/models}}
+            </toc-element>
+            {{/groupedModels}}
+            {{#ungroupedModels}}
+            {{#model}}
+                <toc-element id="{{classFilename}}.md" show-structure-for="chapter" show-structure-depth="4"/>
+            {{/model}}
+            {{/ungroupedModels}}
+        {{/models}}
+    </toc-element>
+    {{#models}}
+    <toc-element toc-title="Locators">
+        {{#locators}}
+            {{#models}}
+            {{#model}}
+        <toc-element id="{{classFilename}}.md" show-structure-for="chapter" show-structure-depth="4"/>
+            {{/model}}
+            {{/models}}
+        {{/locators}}
+    </toc-element>
+    {{/models}}
+    <toc-element toc-title="Methods">
+        {{#apiInfo}}
+            {{#apis}}
+        <toc-element id="{{classFilename}}.md" show-structure-for="chapter" show-structure-depth="4"/>
+            {{/apis}}
+        {{/apiInfo}}
+    </toc-element>
+</chunk>
+</product-profile>
