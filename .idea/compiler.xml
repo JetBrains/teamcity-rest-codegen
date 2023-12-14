@@ -9,8 +9,5 @@
         <module name="teamcity-client-codegen" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="teamcity-client-codegen" target="8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

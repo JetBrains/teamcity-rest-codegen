@@ -369,7 +369,11 @@ public class TeamCityDocsCodegen extends DefaultCodegen implements CodegenConfig
                     )
                 );
 
-                if (subpackage.equals("locator")) {
+                if (subpackage.isEmpty()) {
+                    subpackage = "Other";
+                }
+
+                if (subpackage.equals("Locator")) {
                     locators.add(modelMap);
                 } else {
                     if (!groups.containsKey(subpackage)) {
