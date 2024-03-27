@@ -4,9 +4,11 @@ import io.swagger.models.Model;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.RefModel;
 import io.swagger.models.properties.*;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -93,38 +95,48 @@ public class TeamCityXMLExampleGenerator {
     }
 
     protected void serializePropertyToXml(Document doc, String name, Property property, int depth, Element parentElement) {
-        if (property != null) {
-            if (property instanceof ArrayProperty) {
-                ArrayProperty p = (ArrayProperty) property;
-                Property inner = p.getItems();
-
-                serializePropertyToXml(doc, name, inner, depth + 1, parentElement);
+        try {
+            if (property != null) {
+                if (property instanceof ArrayProperty) {
+                    ArrayProperty p = (ArrayProperty) property;
+                    Property inner = p.getItems();
+                    serializePropertyToXml(doc, name, inner, depth + 1, parentElement);
+                }
+                else if (property instanceof RefProperty) {
+                    RefProperty ref = (RefProperty) property;
+                    String refModelName = ref.getSimpleRef();
+                    ModelImpl actualModel = (ModelImpl) definitions.get(refModelName);
+                    Element refElement = doc.createElement(name);
+                    serializeModelToElement(doc, refModelName, actualModel, depth + 1, refElement);
+                    parentElement.appendChild(refElement);
+                }
+                else {
+                    parentElement.setAttribute(
+                            name.replace("$", ""),
+                            getExample(property)
+                    );
+                }
             }
-            else if (property instanceof RefProperty) {
-                RefProperty ref = (RefProperty) property;
-                String refModelName = ref.getSimpleRef();
-                ModelImpl actualModel = (ModelImpl) definitions.get(refModelName);
-
-                Element refElement = doc.createElement(name);
-                serializeModelToElement(doc, refModelName, actualModel, depth + 1, refElement);
-                parentElement.appendChild(refElement);
-            }
-            else {
-                parentElement.setAttribute(
-                        name, getExample(property)
-                );
-            }
+        } catch (DOMException e) {
+            throw new DOMException(
+                    (short) 5,
+                    "INVALID_CHARACTER_ERR, name: "
+                            + name
+                            + ", example string: "
+                            + getExample(property)
+            );
         }
     }
 
-    /**
-     * Get the example string value for the given Property.
-     * <p>
-     * If an example value was not provided in the specification, a default will be generated.
-     *
-     * @param property Property to get example string for
-     * @return Example String
-     */
+
+            /**
+             * Get the example string value for the given Property.
+             * <p>
+             * If an example value was not provided in the specification, a default will be generated.
+             *
+             * @param property Property to get example string for
+             * @return Example String
+             */
     protected String getExample(Property property) {
         if (!(property.getExample() == null || property.getExample() == "")) {
             return property.getExample().toString();
