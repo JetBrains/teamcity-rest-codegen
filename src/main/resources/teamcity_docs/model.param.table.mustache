@@ -1,29 +1,15 @@
-<table>
-
-<tr><td>Field</td><td>Data type</td>{{#hasEnums}}<td>Allowed values</td>{{/hasEnums}}</tr>
-
 {{#vars}}
-<tr><td>
+### {{name}}
 
-`{{name}}`
+<tip>
 
+<b>Data type:</b> <code>{{#isContainer}}List&lt;{{complexType}}&gt;{{/isContainer}}{{^isContainer}}{{{datatype}}}{{/isContainer}}</code><br/>
+<b>Example:</b> <code>{{example}}</code>
 
-</td>
+</tip>
 
-<td>
+{{unescapedDescription}}
 
-`{{#isContainer}}List<{{complexType}}>{{/isContainer}}{{^isContainer}}{{{datatype}}}{{/isContainer}}`
+{{notes}}
 
-</td>{{#hasEnums}}
-
-<td>
-
-{{#isEnum}}{{#allowableValues}}
-{{#values}}
-* `{{{.}}}`
-{{/values}}
-{{/allowableValues}}{{/isEnum}}
-
-</td>{{/hasEnums}}</tr>
 {{/vars}}
-</table>
